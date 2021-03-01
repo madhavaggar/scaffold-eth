@@ -1,30 +1,74 @@
 pragma solidity >=0.6.0 <0.7.0;
+//SPDX-License-Identifier: MIT
 
 import "hardhat/console.sol";
-import "./ExampleExternalContract.sol"; //https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol
+import "./ExampleExternalContract.sol";
 
-contract Staker {
+
+//import "@openzeppelin/contracts/math/Math.sol";
+//import "@openzeppelin/contracts/access/Ownable.sol"; //https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol
+
+contract Staker{
+
+  event Stake(address user, uint256 amount);
+  event Withdraw(address user,uint256 amount);
+
+  mapping(address => uint256) public balances;
+
+  uint256 public constant threshold = 1 ether;
+  uint256 public deadline = now + 30 seconds;
 
   ExampleExternalContract public exampleExternalContract;
-
-  constructor(address exampleExternalContractAddress) public {
-    exampleExternalContract = ExampleExternalContract(exampleExternalContractAddress);
+  bool public flag = false;
+  
+  constructor(ExampleExternalContract _example) public {
+    exampleExternalContract = _example;
   }
 
-  // Collect funds in a payable `stake()` function and track individual `balances` with a mapping:
-  //  ( make sure to add a `Stake(address,uint256)` event and emit it for the frontend <List/> display )
+  modifier elapsed() {
+    require(now-deadline >= 0,"Deadline not elapsed");
+    _;
+  }
 
+  modifier notCompleted(){
+    require(exampleExternalContract.Completed() == false,"External Contract indicates complete");
+    _;
+  }
 
-  // After some `deadline` allow anyone to call an `execute()` function
-  //  It should either call `exampleExternalContract.complete{value: address(this).balance}()` to send all the value
+  function timeLeft() public view returns(uint256){
+    if(deadline>now){
+      return deadline - now;
+    }
+    else {
+      return 0;
+    }
+  }
 
+  function stake() payable external {
+    require(timeLeft() > 0,"Deadline elapsed");
+    
+    balances[msg.sender] += msg.value;
+    emit Stake(msg.sender,msg.value); 
+    if(timeLeft()>=0 && address(this).balance >= threshold){
+      flag = true;
+    }
+  }
 
+  function execute() public elapsed notCompleted {  
+    require(address(this).balance >= threshold,"Threshold not crossed");
+    require(flag == true, "Threshold not crossed");
+    
+    exampleExternalContract.complete{value: address(this).balance}();
+  }
 
-  // if the `threshold` was not met, allow everyone to call a `withdraw()` function
+  function withdraw() public elapsed notCompleted {
+    require(flag==false,"Cannot withdraw, threshold crossed");
+    require(balances[msg.sender] > 0, "User didn't deposit");
 
-
-
-  // Add a `timeLeft()` view function that returns the time left before the deadline for the frontend
-
+    uint256 amount = balances[msg.sender];
+    balances[msg.sender] = 0;
+    msg.sender.transfer(amount);
+    emit Withdraw(msg.sender, amount);
+  }
 
 }

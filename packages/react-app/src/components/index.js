@@ -9,6 +9,7 @@ export { default as Provider } from "./Provider";
 export { default as Ramp } from "./Ramp";
 export { default as Faucet } from "./Faucet";
 export { default as Wallet } from "./Wallet";
+export { default as Button } from "./Button";
 export { default as Blockie } from "./Blockie";
 export { default as Header } from "./Header";
 export { default as Timeline } from "./Timeline";

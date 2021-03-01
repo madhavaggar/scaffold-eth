@@ -1,6 +1,19 @@
 [
   {
     "inputs": [],
+    "name": "Completed",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "complete",
     "outputs": [],
     "stateMutability": "payable",
