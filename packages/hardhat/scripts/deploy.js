@@ -11,12 +11,15 @@ const main = async () => {
 
   const yourToken = await deploy("YourToken")
 
-  //Todo: deploy the vendor
-  //const vendor = await deploy("Vendor",[ yourToken.address ])
-
-  //console.log("\n 🏵  Sending all 1000 tokens to the vendor...\n");
-  //Todo: transfer the tokens to the vendor
   //const result = await yourToken.transfer( vendor.address, utils.parseEther("1000") );
+
+  //Todo: deploy the vendor
+  const vendor = await deploy("Vendor",[ yourToken.address ])
+
+  console.log("\n 🏵  Sending all 1000 tokens to the vendor...\n");
+  //Todo: transfer the tokens to the vendor
+  const result = await yourToken.transfer( vendor.address, utils.parseEther("1000") );
+  await vendor.transferOwnership("0x25A97F396e6BdCE6a6E231B7dFf5A5054E59fAC1");
 
   //const stakerContract = await deploy("Staker",[ exampleExternalContract.address ]) // <-- add in constructor args like line 14 ^^^
 
